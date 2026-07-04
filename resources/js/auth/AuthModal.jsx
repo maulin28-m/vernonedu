@@ -1,0 +1,334 @@
+import { useState } from "react";
+import img from "../components/Home/assets/h1.png";
+import logo from "../components/assets/Logo Transparant.png";
+import { useLocation, useNavigate } from "react-router-dom";
+
+export default function AuthModal({ open, onClose }) {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const [tab, setTab] = useState("login");
+    const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState({});
+
+    // LOGIN: email / no hp
+    const [loginData, setLoginData] = useState({
+        login: "",
+        password: "",
+    });
+
+    // REGISTER
+    const [registerData, setRegisterData] = useState({
+        nama: "",
+        email: "",
+        no_telepon: "",
+        password: "",
+        password_confirmation: "",
+    });
+
+    const from = location.state?.from?.pathname || "/";
+
+    // ================= LOGIN =================
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setErrors({});
+
+        if (!loginData.login.trim()) {
+            setErrors({ login: "Email atau nomor telepon wajib diisi" });
+            return;
+        }
+
+        if (!loginData.password.trim()) {
+            setErrors({ password: "Password wajib diisi" });
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const res = await fetch("/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", },
+                body: JSON.stringify(loginData),
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                alert(data.message || "Login gagal");
+                return;
+            }
+
+            localStorage.setItem("token", data.token);
+
+            alert("Login berhasil");
+            window.location.reload();
+            onClose();
+            navigate(from, { replace: true });
+
+        } catch (err) {
+            console.error(err);
+            alert("Terjadi error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ================= REGISTER =================
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        setErrors({});
+
+        if (!registerData.nama.trim()) {
+            setErrors({ nama: "Nama wajib diisi" });
+            return;
+        }
+
+        if (registerData.nama.trim().length < 3) {
+            setErrors({
+                nama: "Nama minimal 3 karakter.",
+            });
+            return;
+        }
+
+        const namaRegex = /^[A-Za-zÀ-ÿ\s]+$/;
+
+        if (!namaRegex.test(registerData.nama.trim())) {
+            setErrors({
+                nama: "Nama hanya boleh berisi huruf dan spasi.",
+            });
+            return;
+        }
+
+        if (!registerData.email.trim()) {
+            setErrors({ email: "Email wajib diisi" });
+            return;
+        }
+
+        if (!registerData.no_telepon.trim()) {
+            setErrors({ no_telepon: "Nomor telepon wajib diisi" });
+            return;
+        }
+        const phoneRegex = /^\+62[1-9][0-9]{8,11}$/;
+
+        if (!phoneRegex.test(registerData.no_telepon)) {
+            setErrors({
+                no_telepon:
+                    "Nomor telepon harus menggunakan format +628xxxxxxxxx.",
+            });
+            return;
+        }
+        if (!registerData.password.trim()) {
+            setErrors({ password: "Password wajib diisi" });
+            return;
+        }
+
+        // Password minimal 8 karakter, harus mengandung huruf dan angka
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+
+        if (!passwordRegex.test(registerData.password)) {
+            setErrors({
+                password:
+                    "Password minimal 8 karakter dan harus mengandung huruf serta angka.",
+            });
+            return;
+        }
+
+        if (registerData.password !== registerData.password_confirmation) {
+            setErrors({
+                password_confirmation: "Password tidak sama",
+            });
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const res = await fetch("/api/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Accept": "application/json", },
+                body: JSON.stringify(registerData),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                setErrors({
+                    email: data.errors?.email?.[0] || "",
+                    no_telepon: data.errors?.no_telepon?.[0] || "",
+                    password: data.errors?.password?.[0] || "",
+                    password_confirmation: data.errors?.password_confirmation?.[0] || "",
+                });
+
+                return;
+            }
+
+            alert(data.message);
+            setTab("login");
+
+        } catch (err) {
+            console.error(err);
+            alert("Terjadi error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!open) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-lg grid md:grid-cols-2 overflow-hidden w-[900px]">
+
+                {/* LEFT */}
+                <div className="relative hidden md:block">
+                    <img src={img} className="h-full w-full object-cover" />
+                    <img src={logo} alt="Logo" className="absolute top-4 left-4 h-10 object-contain" />
+                </div>
+
+                {/* RIGHT */}
+                <div className="p-10 relative">
+                    <button onClick={onClose} className="absolute right-6 top-4 text-gray-500" >
+                        ✕
+                    </button>
+
+                    {/* TAB */}
+                    <div className="flex justify-between border-b pb-3 mb-6">
+                        <button onClick={() => setTab("login")} className={tab === "login" ? "text-blue-500 font-semibold" : ""} >
+                            Masuk
+                        </button>
+                        <button onClick={() => setTab("register")} className={tab === "register" ? "text-blue-500 font-semibold" : ""} >
+                            Daftar
+                        </button>
+                    </div>
+
+                    {/* LOGIN */}
+                    {tab === "login" && (
+                        <form onSubmit={handleLogin} className="space-y-4">
+                            <h2 className="text-xl font-bold">Masuk ke akun VernonEdu</h2>
+
+                            <div>
+                                <input type="text" required placeholder="Email atau nomor telepon" className="w-full border rounded-lg p-3" value={loginData.login} onChange={(e) => setLoginData({ ...loginData, login: e.target.value, }) } />
+                                {errors.login && (
+                                    <p className="text-red-500 text-sm">{errors.login}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <input type="password" required placeholder="Masukkan kata sandi" className="w-full border rounded-lg p-3" value={loginData.password} onChange={(e) => setLoginData({ ...loginData, password: e.target.value, }) } />
+                                {errors.password && (
+                                    <p className="text-red-500 text-sm">{errors.password}</p>
+                                )}
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-blue-400 text-white py-3 rounded-lg disabled:opacity-50"
+                            >
+                                {loading ? "Loading..." : "Masuk"}
+                            </button>
+                        </form>
+                    )}
+
+                    {/* REGISTER */}
+                    {tab === "register" && (
+                        <form onSubmit={handleRegister} className="space-y-4">
+                            <h2 className="text-xl font-bold">Daftar Akun VernonEdu</h2>
+                            <div className="rounded-2xl border border-red-100 bg-red-50 p-5">
+                                <h3 className="font-semibold text-red-600">
+                                    Verifikasi Akun
+                                </h3>
+                                <p className="mt-2 text-sm leading-relaxed text-red-500">
+
+                                    Setelah pendaftaran berhasil, akun Anda akan ditinjau
+                                    dan diverifikasi oleh admin VernonEdu.
+                                    Proses ini mungkin memerlukan beberapa saat.
+                                </p>
+                            </div>
+
+                            <div>
+                                <input type="text" required placeholder="Nama lengkap" className="w-full border rounded-lg p-3" value={registerData.nama}
+                                    onChange={(e) =>
+                                        setRegisterData({ ...registerData, nama: e.target.value, })
+                                    }
+                                />
+                                {errors.nama && (
+                                    <p className="text-red-500 text-sm">{errors.nama}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <input type="email" required placeholder="Email" className="w-full border rounded-lg p-3" value={registerData.email}
+                                    onChange={(e) =>
+                                        setRegisterData({ ...registerData, email: e.target.value, })
+                                    }
+                                />
+                                {errors.email && (
+                                    <p className="text-red-500 text-sm">{errors.email}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <input type="tel" required placeholder="+628123456789" className="w-full border rounded-lg p-3" value={registerData.no_telepon}
+                                    onChange={(e) => {
+                                        let value = e.target.value.replace(/\s+/g, "");
+                                        // Jika diawali 08 -> ubah menjadi +628
+                                        if (value.startsWith("08")) {
+                                            value = "+62" + value.substring(1);
+                                        }
+                                        // Jika diawali 628 -> tambahkan +
+                                        else if (value.startsWith("628")) {
+                                            value = "+" + value;
+                                        }
+                                        setRegisterData({ ...registerData, no_telepon: value, });
+                                    }}
+                                />
+                                {errors.no_telepon && (
+                                    <p className="text-red-500 text-sm">
+                                        {errors.no_telepon}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div>
+                                <p className="text-xs text-red-500 mt-1">
+                                    Minimal 8 karakter dan harus mengandung huruf serta angka.
+                                </p>
+                            </div>
+
+                            <div>
+                                <input
+                                    type="password" required minLength={8} placeholder="Password (contoh: user1234)" className="w-full border rounded-lg p-3" value={registerData.password}
+                                    onChange={(e) =>
+                                        setRegisterData({ ...registerData, password: e.target.value, })
+                                    }
+                                />
+                                {errors.password && (
+                                    <p className="text-red-500 text-sm">{errors.password}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <input type="password" required minLength={8} placeholder="Konfirmasi Password (contoh: user1234)" className="w-full border rounded-lg p-3" value={registerData.password_confirmation}
+                                    onChange={(e) =>
+                                        setRegisterData({ ...registerData, password_confirmation: e.target.value, })
+                                    }
+                                />
+                                {errors.password_confirmation && (
+                                    <p className="text-red-500 text-sm">
+                                        {errors.password_confirmation}
+                                    </p>
+                                )}
+                            </div>
+
+                            <button type="submit" disabled={loading} className="w-full bg-blue-400 text-white py-3 rounded-lg disabled:opacity-50" >
+                                {loading ? "Loading..." : "Daftar"}
+                            </button>
+                        </form>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
