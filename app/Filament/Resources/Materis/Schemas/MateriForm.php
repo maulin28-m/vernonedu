@@ -34,7 +34,16 @@ class MateriForm
 
                         Textarea::make('deskripsi')
                             ->label('Deskripsi')
-                            ->rows(4)
+                            ->rows(2)
+                            ->columnSpanFull(),
+                            
+                        \Filament\Forms\Components\RichEditor::make('konten')
+                            ->label('Isi Materi Lengkap')
+                            ->columnSpanFull(),
+                            
+                        Textarea::make('tugas')
+                            ->label('Instruksi Tugas')
+                            ->rows(3)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),

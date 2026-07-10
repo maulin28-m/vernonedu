@@ -24,11 +24,11 @@ export default defineConfig({
         strictPort: true,
 
         watch: {
-            usePolling: true,
+            usePolling: false,
         },
 
         hmr: {
-            host: 'localhost',
+            host: '127.0.0.1',
         },
 
     },

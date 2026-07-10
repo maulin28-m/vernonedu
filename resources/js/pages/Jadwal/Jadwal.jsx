@@ -39,7 +39,10 @@ export default function Jadwal() {
               ? "red"
               : item.status === "selesai"
               ? "gray"
-              : "blue"
+              : "blue",
+              
+          backgroundColor: 'transparent',
+          borderColor: 'transparent',
         }));
 
         setEvents(mapped);

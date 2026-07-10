@@ -62,9 +62,7 @@ export default function AuthModal({ open, onClose }) {
             localStorage.setItem("token", data.token);
 
             alert("Login berhasil");
-            window.location.reload();
-            onClose();
-            navigate(from, { replace: true });
+            window.location.href = "/dashboard";
 
         } catch (err) {
             console.error(err);
@@ -204,43 +202,52 @@ export default function AuthModal({ open, onClose }) {
 
                     {/* LOGIN */}
                     {tab === "login" && (
-                        <form onSubmit={handleLogin} className="space-y-4">
+                        <div className="space-y-4" onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(e); }}>
                             <h2 className="text-xl font-bold">Masuk ke akun VernonEdu</h2>
+                            
+
 
                             <div>
-                                <input type="text" required placeholder="Email atau nomor telepon" className="w-full border rounded-lg p-3" value={loginData.login} onChange={(e) => setLoginData({ ...loginData, login: e.target.value, }) } />
+                                <input type="text" required autoComplete="off" placeholder="Email atau nomor telepon" className="w-full border rounded-lg p-3 bg-white placeholder-gray-400" value={loginData.login}
+                                    readOnly onFocus={(e) => e.target.removeAttribute("readonly")}
+                                    onChange={(e) => setLoginData({ ...loginData, login: e.target.value, }) } />
                                 {errors.login && (
                                     <p className="text-red-500 text-sm">{errors.login}</p>
                                 )}
                             </div>
 
                             <div>
-                                <input type="password" required placeholder="Masukkan kata sandi" className="w-full border rounded-lg p-3" value={loginData.password} onChange={(e) => setLoginData({ ...loginData, password: e.target.value, }) } />
+                                <input type="password" required autoComplete="new-password" placeholder="Masukkan kata sandi" className="w-full border rounded-lg p-3 bg-white placeholder-gray-400" value={loginData.password}
+                                    readOnly onFocus={(e) => e.target.removeAttribute("readonly")}
+                                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value, }) } />
                                 {errors.password && (
                                     <p className="text-red-500 text-sm">{errors.password}</p>
                                 )}
                             </div>
 
                             <button
-                                type="submit"
+                                type="button"
+                                onClick={handleLogin}
                                 disabled={loading}
                                 className="w-full bg-blue-400 text-white py-3 rounded-lg disabled:opacity-50"
                             >
                                 {loading ? "Loading..." : "Masuk"}
                             </button>
-                        </form>
+                        </div>
                     )}
 
                     {/* REGISTER */}
                     {tab === "register" && (
-                        <form onSubmit={handleRegister} className="space-y-4">
+                        <div className="space-y-4" onKeyDown={(e) => { if (e.key === 'Enter') handleRegister(e); }}>
                             <h2 className="text-xl font-bold">Daftar Akun VernonEdu</h2>
+                            
+
+
                             <div className="rounded-2xl border border-red-100 bg-red-50 p-5">
                                 <h3 className="font-semibold text-red-600">
                                     Verifikasi Akun
                                 </h3>
                                 <p className="mt-2 text-sm leading-relaxed text-red-500">
-
                                     Setelah pendaftaran berhasil, akun Anda akan ditinjau
                                     dan diverifikasi oleh admin VernonEdu.
                                     Proses ini mungkin memerlukan beberapa saat.
@@ -248,7 +255,8 @@ export default function AuthModal({ open, onClose }) {
                             </div>
 
                             <div>
-                                <input type="text" required placeholder="Nama lengkap" className="w-full border rounded-lg p-3" value={registerData.nama}
+                                <input type="text" required autoComplete="off" placeholder="Nama lengkap" className="w-full border rounded-lg p-3 bg-white placeholder-gray-400" value={registerData.nama}
+                                    readOnly onFocus={(e) => e.target.removeAttribute("readonly")}
                                     onChange={(e) =>
                                         setRegisterData({ ...registerData, nama: e.target.value, })
                                     }
@@ -259,7 +267,8 @@ export default function AuthModal({ open, onClose }) {
                             </div>
 
                             <div>
-                                <input type="email" required placeholder="Email" className="w-full border rounded-lg p-3" value={registerData.email}
+                                <input type="email" required autoComplete="nope" placeholder="Email" className="w-full border rounded-lg p-3 bg-white placeholder-gray-400" value={registerData.email}
+                                    readOnly onFocus={(e) => e.target.removeAttribute("readonly")}
                                     onChange={(e) =>
                                         setRegisterData({ ...registerData, email: e.target.value, })
                                     }
@@ -270,17 +279,12 @@ export default function AuthModal({ open, onClose }) {
                             </div>
 
                             <div>
-                                <input type="tel" required placeholder="+628123456789" className="w-full border rounded-lg p-3" value={registerData.no_telepon}
+                                <input type="text" required autoComplete="nope" placeholder="+628123456789" className="w-full border rounded-lg p-3 bg-white placeholder-gray-400" value={registerData.no_telepon}
+                                    readOnly onFocus={(e) => e.target.removeAttribute("readonly")}
                                     onChange={(e) => {
                                         let value = e.target.value.replace(/\s+/g, "");
-                                        // Jika diawali 08 -> ubah menjadi +628
-                                        if (value.startsWith("08")) {
-                                            value = "+62" + value.substring(1);
-                                        }
-                                        // Jika diawali 628 -> tambahkan +
-                                        else if (value.startsWith("628")) {
-                                            value = "+" + value;
-                                        }
+                                        if (value.startsWith("08")) value = "+62" + value.substring(1);
+                                        else if (value.startsWith("628")) value = "+" + value;
                                         setRegisterData({ ...registerData, no_telepon: value, });
                                     }}
                                 />
@@ -299,7 +303,8 @@ export default function AuthModal({ open, onClose }) {
 
                             <div>
                                 <input
-                                    type="password" required minLength={8} placeholder="Password (contoh: user1234)" className="w-full border rounded-lg p-3" value={registerData.password}
+                                    type="password" required minLength={8} autoComplete="new-password" placeholder="Password (contoh: user1234)" className="w-full border rounded-lg p-3 bg-white placeholder-gray-400" value={registerData.password}
+                                    readOnly onFocus={(e) => e.target.removeAttribute("readonly")}
                                     onChange={(e) =>
                                         setRegisterData({ ...registerData, password: e.target.value, })
                                     }
@@ -310,7 +315,8 @@ export default function AuthModal({ open, onClose }) {
                             </div>
 
                             <div>
-                                <input type="password" required minLength={8} placeholder="Konfirmasi Password (contoh: user1234)" className="w-full border rounded-lg p-3" value={registerData.password_confirmation}
+                                <input type="password" required minLength={8} autoComplete="new-password" placeholder="Konfirmasi Password (contoh: user1234)" className="w-full border rounded-lg p-3 bg-white placeholder-gray-400" value={registerData.password_confirmation}
+                                    readOnly onFocus={(e) => e.target.removeAttribute("readonly")}
                                     onChange={(e) =>
                                         setRegisterData({ ...registerData, password_confirmation: e.target.value, })
                                     }
@@ -322,10 +328,10 @@ export default function AuthModal({ open, onClose }) {
                                 )}
                             </div>
 
-                            <button type="submit" disabled={loading} className="w-full bg-blue-400 text-white py-3 rounded-lg disabled:opacity-50" >
+                            <button type="button" onClick={handleRegister} disabled={loading} className="w-full bg-blue-400 text-white py-3 rounded-lg disabled:opacity-50" >
                                 {loading ? "Loading..." : "Daftar"}
                             </button>
-                        </form>
+                        </div>
                     )}
                 </div>
             </div>

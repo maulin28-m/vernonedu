@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 
 use App\Models\Transaction;
 use App\Models\Peserta;
+use App\Models\User;
+use Filament\Notifications\Notification;
+use Filament\Notifications\Actions\Action;
 
 class CourseController extends Controller
 {
@@ -59,6 +62,8 @@ class CourseController extends Controller
 
             ->get();
 
+        $peserta->load('materis');
+
         /*
         |--------------------------------------------------------------------------
         | FORMAT
@@ -89,39 +94,24 @@ class CourseController extends Controller
 
                 /*
                 |--------------------------------------------------------------------------
-                | PROGRESS
-                |--------------------------------------------------------------------------
-                */
-
-                $progress = $peserta
-                    ->getProgressBySubProgram(
-                        $subProgram->id
-                    );
-
-                /*
-                |--------------------------------------------------------------------------
                 | MATERI SELESAI
                 |--------------------------------------------------------------------------
                 */
 
-                $materiSelesai = $peserta
-                    ->materis()
-
-                    ->whereHas(
-                        'subProgram',
-                        fn ($q) =>
-                            $q->where(
-                                'id',
-                                $subProgram->id
-                            )
-                    )
-
-                    ->wherePivot(
-                        'status',
-                        'selesai'
-                    )
-
+                $materiSelesai = $peserta->materis
+                    ->where('sub_program_id', $subProgram->id)
+                    ->where('pivot.status', 'selesai')
                     ->count();
+
+                /*
+                |--------------------------------------------------------------------------
+                | PROGRESS
+                |--------------------------------------------------------------------------
+                */
+
+                $progress = $totalMateri > 0 
+                    ? round(($materiSelesai / $totalMateri) * 100) 
+                    : 0;
 
                 return [
 
@@ -249,6 +239,8 @@ class CourseController extends Controller
 
         }
 
+        $peserta->load('materis');
+
         /*
         |--------------------------------------------------------------------------
         | MATERI + STATUS
@@ -266,38 +258,20 @@ class CourseController extends Controller
                 $materi
             ) use ($peserta) {
 
-                $progress = $peserta
-
-                    ->materis()
-
-                    ->where(
-                        'materi_id',
-                        $materi->id
-                    )
-
-                    ->first();
+                $progress = $peserta->materis->firstWhere('id', $materi->id);
+                $hasSubmitted = \App\Models\TugasSubmission::where('peserta_id', $peserta->id)
+                    ->where('materi_id', $materi->id)->exists();
 
                 return [
-
-                    'id' =>
-                        $materi->id,
-
-                    'judul' =>
-                        $materi->judul,
-
-                    'deskripsi' =>
-                        $materi->deskripsi,
-
-                    'urutan' =>
-                        $materi->urutan,
-
-                    'status' =>
-                        $progress?->pivot?->status
-                        ?? 'proses',
-
-                    'tanggal' =>
-                        $progress?->pivot?->tanggal,
-
+                    'id' => $materi->id,
+                    'judul' => $materi->judul,
+                    'deskripsi' => $materi->deskripsi,
+                    'konten' => $materi->konten,
+                    'tugas' => $materi->tugas,
+                    'urutan' => $materi->urutan,
+                    'status' => $progress?->pivot?->status ?? 'proses',
+                    'tanggal' => $progress?->pivot?->tanggal,
+                    'has_submitted' => $hasSubmitted,
                 ];
 
             });
@@ -315,17 +289,6 @@ class CourseController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | PROGRESS
-        |--------------------------------------------------------------------------
-        */
-
-        $progress = $peserta
-            ->getProgressBySubProgram(
-                $subProgram->id
-            );
-
-        /*
-        |--------------------------------------------------------------------------
         | MATERI SELESAI
         |--------------------------------------------------------------------------
         */
@@ -337,6 +300,16 @@ class CourseController extends Controller
                     'selesai'
                 )
                 ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | PROGRESS
+        |--------------------------------------------------------------------------
+        */
+
+        $progress = $totalMateri > 0
+            ? round(($materiSelesai / $totalMateri) * 100)
+            : 0;
 
         /*
         |--------------------------------------------------------------------------
@@ -380,5 +353,106 @@ class CourseController extends Controller
                 $materis,
 
         ]);
+    }
+    /*
+    |--------------------------------------------------------------------------
+    | UPDATE PROGRESS MATERI
+    |--------------------------------------------------------------------------
+    */
+
+    public function updateProgress(Request $request, $id)
+    {
+        $user = $request->user();
+        $peserta = \App\Models\Peserta::where('log_user_id', $user->id)->first();
+
+        if (!$peserta) {
+            return response()->json(['message' => 'Peserta tidak ditemukan'], 404);
+        }
+
+        $materi = \App\Models\Materi::find($id);
+        if (!$materi) {
+            return response()->json(['message' => 'Materi tidak ditemukan'], 404);
+        }
+
+        $progress = $peserta->materis()->where('materi_id', $id)->first();
+        $newStatus = 'selesai';
+
+        if ($progress) {
+            $newStatus = $progress->pivot->status === 'selesai' ? 'proses' : 'selesai';
+            $peserta->materis()->updateExistingPivot($id, [
+                'status' => $newStatus,
+                'tanggal' => now()->toDateString()
+            ]);
+        } else {
+            $peserta->materis()->attach($id, [
+                'status' => $newStatus,
+                'tanggal' => now()->toDateString()
+            ]);
+        }
+
+        if ($newStatus === 'selesai' && $peserta->isSubProgramCompleted($materi->sub_program_id)) {
+            // Cek apakah sertifikat sudah pernah dibuat
+            $exists = \App\Models\Certificate::where('peserta_id', $peserta->id)
+                ->where('sub_program_id', $materi->sub_program_id)
+                ->exists();
+
+            if (!$exists) {
+                // Buat sertifikat draft secara otomatis
+                \App\Models\Certificate::create([
+                    'peserta_id' => $peserta->id,
+                    'sub_program_id' => $materi->sub_program_id,
+                    'status' => 'draft',
+                ]);
+            }
+        }
+
+        return response()->json(['message' => 'Progress diperbarui', 'status' => $newStatus]);
+    }
+
+    public function submitTugas(Request $request, $id)
+    {
+        $request->validate([
+            'file_url' => 'required|string',
+        ]);
+
+        $user = $request->user();
+        $peserta = \App\Models\Peserta::where('log_user_id', $user->id)->first();
+
+        if (!$peserta) {
+            return response()->json(['message' => 'Peserta tidak ditemukan'], 404);
+        }
+
+        $materi = \App\Models\Materi::find($id);
+        if (!$materi) {
+            return response()->json(['message' => 'Materi tidak ditemukan'], 404);
+        }
+
+        // Simpan submission
+        \App\Models\TugasSubmission::updateOrCreate(
+            ['peserta_id' => $peserta->id, 'materi_id' => $id],
+            ['file_url' => $request->file_url]
+        );
+
+        // Tandai selesai
+        $peserta->materis()->syncWithoutDetaching([
+            $id => ['status' => 'selesai', 'tanggal' => now()->toDateString()]
+        ]);
+
+        // Cek jika mencapai 100% (logic sama dengan updateProgress)
+        if ($peserta->isSubProgramCompleted($materi->sub_program_id)) {
+            $exists = \App\Models\Certificate::where('peserta_id', $peserta->id)
+                ->where('sub_program_id', $materi->sub_program_id)
+                ->exists();
+
+            if (!$exists) {
+                \App\Models\Certificate::create([
+                    'peserta_id' => $peserta->id,
+                    'sub_program_id' => $materi->sub_program_id,
+                    'status' => 'draft',
+                ]);
+            }
+        }
+
+        return response()->json(['message' => 'Tugas berhasil dikumpulkan dan ditandai selesai', 'status' => 'selesai']);
     }
 }

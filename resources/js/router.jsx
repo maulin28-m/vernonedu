@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import Home from "./pages/Home/Home";
@@ -41,7 +41,7 @@ export default function Router() {
         try {
 
             const res = await fetch(
-                "http://localhost:8000/api/me",
+                "http://127.0.0.1:8000/api/me",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -131,7 +131,7 @@ export default function Router() {
                 {/* PUBLIC */}
                 <Route
                     path="/"
-                    element={<Home />}
+                    element={user ? <Navigate to="/dashboard" replace /> : <Home />}
                 />
 
                 <Route

@@ -24,7 +24,7 @@ export default function Checkout() {
         const fetchData = async () => {
             try {
                 const res = await fetch(
-                    `http://localhost:8000/api/sub-programs/${id}`
+                    `http://127.0.0.1:8000/api/sub-programs/${id}`
                 );
                 if (!res.ok) throw new Error("Gagal fetch data");
                 const data = await res.json();
@@ -64,7 +64,7 @@ export default function Checkout() {
 
         try {
             const res = await fetch(
-                "http://localhost:8000/api/create-transaction",
+                "http://127.0.0.1:8000/api/create-transaction",
                 {
                     method: "POST",
                     headers: {

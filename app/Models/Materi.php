@@ -10,6 +10,8 @@ class Materi extends Model
         'sub_program_id',
         'judul',
         'deskripsi',
+        'konten',
+        'tugas',
         'urutan',
     ];
 

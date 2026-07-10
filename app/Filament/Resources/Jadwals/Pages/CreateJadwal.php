@@ -111,7 +111,7 @@ class CreateJadwal extends CreateRecord
                 |--------------------------------------------------------------------------
                 */
 
-                else {
+                elseif ($repeatType === 'weekly') {
 
                     $shouldCreate =
 
@@ -126,6 +126,19 @@ class CreateJadwal extends CreateRecord
                             $dayName,
                             $excludeDays
                         );
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | SPECIFIC DAY
+                |--------------------------------------------------------------------------
+                */
+
+                else {
+                    $shouldCreate = 
+                        ($dayName === $repeatType) 
+                        && 
+                        ! in_array($dayName, $excludeDays);
                 }
 
                 /*

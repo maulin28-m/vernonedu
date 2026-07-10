@@ -162,6 +162,17 @@ class Peserta extends Model
     public function getProgressBySubProgram(
         $subProgramId
     ) {
+        if ($this->relationLoaded('materis')) {
+            $totalMateri = Materi::where('sub_program_id', $subProgramId)->count();
+            if ($totalMateri === 0) return 0;
+            
+            $materiSelesai = $this->materis
+                ->where('sub_program_id', $subProgramId)
+                ->where('pivot.status', 'selesai')
+                ->count();
+                
+            return round(($materiSelesai / $totalMateri) * 100);
+        }
 
         $totalMateri = Materi::where(
             'sub_program_id',

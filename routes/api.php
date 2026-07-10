@@ -64,6 +64,13 @@ Route::get('/courses', function () {
 |--------------------------------------------------------------------------
 */
 
+Route::get('/delete-duplicates', function () {
+    \Illuminate\Support\Facades\DB::table('programs')->where('id', '>', 5)->delete();
+    \Illuminate\Support\Facades\Cache::flush();
+    return response()->json(['status' => 'deleted and flushed']);
+});
+
+
 Route::get(
     '/programs',
     [ProgramController::class, 'index']
@@ -192,6 +199,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get(
         '/my-courses/{slug}',
         [CourseController::class, 'showMyCourse']
+    );
+
+    Route::post(
+        '/my-courses/materi/{id}/progress',
+        [CourseController::class, 'updateProgress']
+    );
+
+    Route::post(
+        '/my-courses/materi/{id}/submit-tugas',
+        [CourseController::class, 'submitTugas']
     );
 
     /*

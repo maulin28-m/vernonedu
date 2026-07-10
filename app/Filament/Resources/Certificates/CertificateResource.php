@@ -24,6 +24,18 @@ class CertificateResource extends Resource
 
     protected static string | UnitEnum | null $navigationGroup = 'Operasional';
     protected static ?int $navigationSort = 2;
+    
+    public static function getNavigationBadge(): ?string
+    {
+        $count = \App\Models\Certificate::where('status', 'draft')->where('is_read', false)->count();
+
+        return (string) $count;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'danger';
+    }
     public static function form(Schema $schema): Schema
     {
         return CertificateForm::configure($schema);

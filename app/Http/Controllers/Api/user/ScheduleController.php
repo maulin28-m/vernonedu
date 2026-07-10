@@ -82,7 +82,7 @@ class ScheduleController extends Controller
                     $jadwal->id,
 
                 'tanggal' =>
-                    $jadwal->tanggal,
+                    \Carbon\Carbon::parse($jadwal->tanggal)->format('Y-m-d'),
 
                 'waktu_mulai' =>
                     $jadwal->waktu_mulai,

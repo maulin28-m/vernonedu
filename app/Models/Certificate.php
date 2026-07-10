@@ -35,6 +35,7 @@ class Certificate extends Model
         'status',
 
         'issued_at',
+        'is_read',
 
     ];
 

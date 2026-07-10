@@ -78,9 +78,15 @@ class TransactionController extends Controller
 
         if ($existingTransaction) {
 
+            if ($existingTransaction->transaction_status === 'pending') {
+                return response()->json([
+                    'success' => true,
+                    'snap_token' => $existingTransaction->snap_token,
+                    'message' => 'Melanjutkan transaksi sebelumnya',
+                ]);
+            }
+
             $message = match ($existingTransaction->transaction_status) {
-                'pending' =>
-                    'Program ini sedang menunggu pembayaran',
                 'capture',
                 'settlement' =>
                     'Program ini sudah pernah dibeli',
@@ -274,31 +280,17 @@ class TransactionController extends Controller
 
             if ($subProgram) {
 
-                foreach (
-                    $subProgram->materis as $materi
-                ) {
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | CEK DUPLIKAT
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (
-                        ! $peserta
-                            ->materis()
-                            ->where('materi_id', $materi->id)
-                            ->exists()
-                    ) {
-
-                        $peserta
-                            ->materis()
-                            ->attach( $materi->id, [
-                                'status' => 'proses',
-                                'tanggal' => now(),
-                            ] );
-                    }
+                $materiIds = $subProgram->materis->pluck('id')->toArray();
+                $syncData = [];
+                
+                foreach ($materiIds as $materiId) {
+                    $syncData[$materiId] = [
+                        'status' => 'proses',
+                        'tanggal' => now(),
+                    ];
                 }
+
+                $peserta->materis()->syncWithoutDetaching($syncData);
             }
         }
     }

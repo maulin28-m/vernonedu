@@ -3,11 +3,12 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Carbon\Carbon;
 
-class JadwalAvailableNotification extends Notification
+class JadwalAvailableNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

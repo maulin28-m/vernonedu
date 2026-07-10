@@ -22,7 +22,7 @@ function App() {
       return;
     }
 
-    fetch("http://localhost:8000/api/me", {
+    fetch("http://127.0.0.1:8000/api/me", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

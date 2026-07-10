@@ -9,7 +9,12 @@ export default function CategoryFilter({ active, setActive }) {
     fetch(`${import.meta.env.VITE_API_URL}/programs`)
       .then(res => res.json())
       .then(data => {
-        setCategories(data);
+        const uniqueCategories = data.filter((item, index, self) =>
+          index === self.findIndex((t) => (
+            t.nama === item.nama
+          ))
+        );
+        setCategories(uniqueCategories);
         setLoading(false);
       })
       .catch(err => {

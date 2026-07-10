@@ -17,7 +17,7 @@ export default function MyCalendar() {
         const token = localStorage.getItem("token");
 
         const res = await fetch(
-          "http://localhost:8000/api/my-schedule",
+          "http://127.0.0.1:8000/api/my-schedule",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -49,15 +49,12 @@ export default function MyCalendar() {
             lokasi: item.lokasi,
             status: item.status,
             sub_program: item.sub_program,
+            color: item.status === "batal" ? "red" : item.status === "selesai" ? "gray" : "blue",
           },
 
-          // warna event
-          color:
-            item.status === "batal"
-              ? "red"
-              : item.status === "selesai"
-              ? "gray"
-              : "blue",
+          // we do not use 'color' here directly so that FullCalendar doesn't make the background solid
+          backgroundColor: 'transparent',
+          borderColor: 'transparent',
         }));
 
         setEvents(mapped);

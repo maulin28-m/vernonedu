@@ -56,7 +56,7 @@ export default function Navbar({ user }) {
         }
     };
     useEffect(() => {
-        if (!user?.id) {
+        if (!user?.id || !echo) {
             return;
         }
         echo.channel(`notifications.${user.id}`).listen(
@@ -66,7 +66,9 @@ export default function Navbar({ user }) {
             }
         );
         return () => {
-            echo.leave(`notifications.${user.id}`);
+            if (echo) {
+                echo.leave(`notifications.${user.id}`);
+            }
         };
     }, [user]);
 

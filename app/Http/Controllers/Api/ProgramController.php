@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Program;
 use App\Models\SubProgram;
+use Illuminate\Support\Facades\Cache;
 
 class ProgramController extends Controller
 {
@@ -32,12 +33,14 @@ class ProgramController extends Controller
 
     public function show($id)
     {
-        return Program::select(
-            'id',
-            'nama',
-            'deskripsi',
-            'image_url'
-        )->findOrFail($id);
+        return Cache::remember("api.programs.{$id}", 86400, function () use ($id) {
+            return Program::select(
+                'id',
+                'nama',
+                'deskripsi',
+                'image_url'
+            )->findOrFail($id);
+        });
     }
 
     /*
@@ -48,21 +51,23 @@ class ProgramController extends Controller
 
     public function subPrograms($id)
     {
-        return SubProgram::where(
-                'program_id',
-                $id
-            )
-            ->select(
-                'id',
-                'program_id',
-                'name',
-                'slug',
-                'description',
-                'usia',
-                'harga',
-                'image_url'
-            )
-            ->get();
+        return Cache::remember("api.programs.{$id}.sub_programs", 86400, function () use ($id) {
+            return SubProgram::where(
+                    'program_id',
+                    $id
+                )
+                ->select(
+                    'id',
+                    'program_id',
+                    'name',
+                    'slug',
+                    'description',
+                    'usia',
+                    'harga',
+                    'image_url'
+                )
+                ->get();
+        });
     }
 
     /*
@@ -73,26 +78,28 @@ class ProgramController extends Controller
 
     public function showSubProgram($slug)
     {
-        return SubProgram::with([
+        return Cache::remember("api.sub_programs.{$slug}", 86400, function () use ($slug) {
+            return SubProgram::with([
 
-                'program:id,nama,deskripsi,image_url',
+                    'program:id,nama,deskripsi,image_url',
 
-                'materis:id,sub_program_id,judul,deskripsi,urutan',
+                    'materis:id,sub_program_id,judul,deskripsi,urutan',
 
-            ])
-            ->where('slug', $slug)
+                ])
+                ->where('slug', $slug)
 
-            ->select(
-                'id',
-                'program_id',
-                'name',
-                'slug',
-                'description',
-                'usia',
-                'harga',
-                'image_url'
-            )
+                ->select(
+                    'id',
+                    'program_id',
+                    'name',
+                    'slug',
+                    'description',
+                    'usia',
+                    'harga',
+                    'image_url'
+                )
 
-            ->firstOrFail();
+                ->firstOrFail();
+        });
     }
 }

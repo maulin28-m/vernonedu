@@ -40,7 +40,7 @@ WORKDIR /var/www
 COPY . .
 
 # env
-RUN cp .env.docker .env || true
+RUN cp .env.example .env
 
 # composer
 RUN composer install --no-interaction --prefer-dist
