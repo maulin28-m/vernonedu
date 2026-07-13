@@ -28,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(\App\Filament\Pages\Auth\CustomLogin::class)
             ->brandName('VernonEdu Admin')
             ->brandLogo(asset('assets/logo.png'))
             ->colors([
