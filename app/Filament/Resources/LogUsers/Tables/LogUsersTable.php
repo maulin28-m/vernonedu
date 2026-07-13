@@ -115,10 +115,13 @@ class LogUsersTable
                                 );
                             });
 
+                            // Kirim email notifikasi
+                            \Illuminate\Support\Facades\Mail::to($record->email)->send(new \App\Mail\ParticipantApprovedMail($record));
+
                             Notification::make()
                                 ->title('Berhasil Disetujui')
                                 ->body(
-                                    "User {$record->nama} berhasil di-approve."
+                                    "User {$record->nama} berhasil di-approve dan email notifikasi telah dikirim."
                                 )
                                 ->success()
                                 ->send();
