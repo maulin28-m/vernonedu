@@ -18,6 +18,24 @@ Pastikan software berikut sudah terinstall di komputer:
 
 ---
 
+# Cara Menjalankan dengan Docker
+
+Proyek ini sudah dikonfigurasi penuh dengan Docker untuk memudahkan proses *development* dan demonstrasi aplikasi. Anda tidak perlu menginstal PHP, Node.js, atau MySQL secara manual di komputer Anda, cukup pastikan **Docker Desktop** sudah terinstal dan berjalan.
+
+1. Buka terminal (Command Prompt / PowerShell / Terminal).
+2. Arahkan direktori terminal ke folder proyek ini.
+3. Jalankan perintah berikut:
+   ```bash
+   docker compose up
+   ```
+   *(Gunakan perintah `docker compose up -d` jika ingin menjalankan container di background)*
+4. Tunggu hingga proses *build* dan persiapan selesai. Docker akan otomatis men-download image, menjalankan `composer install`, `npm install`, dan migrasi database.
+5. Setelah selesai, aplikasi dapat diakses melalui browser:
+   - **Aplikasi Utama:** [http://localhost:8000](http://localhost:8000)
+   - **Mailpit (Testing Email):** [http://localhost:8025](http://localhost:8025)
+
+---
+
 # Fitur Utama:
 
 **Berikut panduan penggunaan aplikasi:**
