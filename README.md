@@ -1,6 +1,21 @@
 # VernonEdu
 
-Project **VernonEdu** adalah aplikasi web berbasis **Laravel 12 + React + Vite + TailwindCSS**.
+**VernonEdu** adalah sebuah "Sistem Informasi Pendaftaran dan Penjadwalan Kelas Online" berbasis web yang dirancang khusus untuk mentransformasi dan mendigitalisasi proses administrasi lembaga pendidikan nonformal. Dibangun menggunakan arsitektur teknologi modern (**Laravel 12, React, Vite, dan TailwindCSS**), sistem ini hadir sebagai solusi strategis untuk menggantikan metode pengelolaan manual yang selama ini membatasi skalabilitas lembaga.
+
+## Latar Belakang dan Permasalahan
+Di era transformasi digital yang semakin pesat, integrasi teknologi informasi menjadi pilar utama dalam meningkatkan efisiensi operasional lembaga pendidikan. Namun, proses pendaftaran dan penjadwalan kelas pada awalnya masih dikelola secara manual menggunakan *WhatsApp* dan *spreadsheet*. Menurut Connolly & Begg (2021), pengelolaan data tanpa dukungan Sistem Manajemen Basis Data (DBMS) yang terstruktur dapat memicu inkonsistensi data, memperlambat pemrosesan, serta menghambat efektivitas pengambilan keputusan. Metode manual ini sangat tidak *scalable*, rawan kesalahan (*human error*), dan memiliki keterbatasan besar terkait keamanan data saat jumlah peserta bertambah.
+
+## Solusi Strategis & User Experience (UX)
+Untuk mengatasi masalah tersebut, VernonEdu melakukan migrasi penuh ke sistem berbasis web yang tersentralisasi dengan DBMS. Hal ini sejalan dengan pandangan Satzinger dkk. (2021) bahwa sistem informasi yang tepat guna tidak hanya berfungsi sebagai alat penyimpanan, tetapi juga mengotomatisasi proses bisnis yang kompleks.
+
+Berdasarkan penelitian Pratama dkk. (2023), platform pendaftaran yang responsif dapat **meningkatkan konversi pendaftar hingga dua kali lipat** karena kemudahan akses yang ditawarkan. Oleh karena itu, VernonEdu sangat mengutamakan kenyamanan *User Experience (UX)* dengan memberikan transparansi informasi secara *real-time* kepada calon peserta—seperti melihat ketersediaan program, jadwal, dan detail harga—melalui antarmuka yang modern dan interaktif.
+
+## Optimalisasi Teknologi
+Urgensi pengembangan sistem berbasis web ini sejalan dengan temuan Saputra & Dahlan (2024) mengenai implementasi *framework* modern. Dengan memanfaatkan ekosistem Laravel dan React, sistem ini:
+* **Mengoptimalkan Performa & Keamanan:** Menjamin pertukaran data yang aman, konsisten, dan handal (terutama untuk transaksi).
+* **Terintegrasi Penuh:** Dilengkapi integrasi Payment Gateway otomatis via Midtrans dan notifikasi email untuk mengeliminasi konfirmasi manual.
+
+Melalui sistem informasi ini, proses administrasi VernonEdu bertransformasi menjadi jauh lebih profesional, efisien, terintegrasi, dan siap mendukung pertumbuhan serta skalabilitas lembaga di masa depan.
 
 ---
 
